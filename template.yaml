@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: SafeSphere AI serverless triage prototype
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 10
+    MemorySize: 128
+
+Resources:
+  TriageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: triage.handler
+      CodeUri: lambda/
+      Events:
+        TriageApi:
+          Type: Api
+          Properties:
+            Path: /triage
+            Method: post
+
+  IncidentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: incidentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: incidentId
+          KeyType: HASH
+
+Outputs:
+  TriageApiUrl:
+    Description: API Gateway endpoint for triage
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/triage"
